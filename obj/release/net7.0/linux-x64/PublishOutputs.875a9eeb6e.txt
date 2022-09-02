@@ -1,2 +1,0 @@
-/home/trbl/coding/fortress/gemini-comments/bin/release/net7.0/linux-x64/publish/gemini-comments.pdb
-/home/trbl/coding/fortress/gemini-comments/bin/release/net7.0/linux-x64/publish/gemini-comments
