@@ -19,8 +19,8 @@ internal class Program
     public static readonly string geminiUrl = Environment.GetEnvironmentVariable("GEMINI_URL");
     public static readonly string tlsVersion = Environment.GetEnvironmentVariable("TLS_VERSION");
     public static readonly string remoteUser = Environment.GetEnvironmentVariable("REMOTE_USER");
-    public static readonly bool certValid = Environment.GetEnvironmentVariable("TLS_CLIENT_VALID").ToLowerInvariant() == "true";
-    public static readonly bool certTrusted = Environment.GetEnvironmentVariable("TLS_CLIENT_TRUSTED").ToLowerInvariant() == "true";
+    public static readonly bool certValid = Environment.GetEnvironmentVariable("TLS_CLIENT_VALID") != null && Environment.GetEnvironmentVariable("TLS_CLIENT_VALID").ToLowerInvariant() == "true";
+    public static readonly bool certTrusted = Environment.GetEnvironmentVariable("TLS_CLIENT_TRUSTED") != null && Environment.GetEnvironmentVariable("TLS_CLIENT_TRUSTED").ToLowerInvariant() == "true";
     public static readonly string certSubject = Environment.GetEnvironmentVariable("TLS_CLIENT_SUBJECT");
     public static readonly string certHash = Environment.GetEnvironmentVariable("TLS_CLIENT_HASH");
     public static readonly string certFrom = Environment.GetEnvironmentVariable("TLS_CLIENT_NOT_BEFORE");
@@ -59,13 +59,8 @@ internal class Program
                 case "view":
                     {
                         Console.Write("20 text/gemini\r\n");
-                        if (Posts.Count == 0)
-                        {
-                            Console.Write($"### No comments found\r\n");
-                            Console.Write($"=> {geminiUrl.Replace("view", "add")} add one!\n");
-                            break;
-                        }
                         Console.Write("### Comments\n");
+                        Console.Write("> Your Certificate Subject (CN=) will be use for your name and the Certificate Thumbprint will be saved & publicly accessible.\n");
                         Console.Write($"=> {geminiUrl.Replace("view", "add")} add one!\n");
                         foreach (var comments in Posts.Where(x => x.Key == target).Select(x => x.Value))
                         {
@@ -83,25 +78,23 @@ internal class Program
                     }
                 case "add":
                     {
+                        if (authType.ToLowerInvariant() != "certificate")
+                        {
+                            Console.Write($"60 Commenting requires a client certificate\r\n");
+                            break;
+                        }
+                        if (!certValid)
+                        {
+                            Console.Write($"62 Commenting requires a *valid* client certificate\r\n");
+                            break;
+                        }
+
                         if (string.IsNullOrWhiteSpace(query))
                         {
-                            Console.Error.WriteLine("Add Handler");
-                            if (authType.ToLowerInvariant() != "certificate")
-                            {
-                                Console.Write($"60 Commenting requires a client certificate\r\n");
-                                break;
-                            }
-                            if (!certValid)
-                            {
-                                Console.Write($"62 Commenting requires a *valid* client certificate\r\n");
-                                break;
-                            }
-
                             Console.Write($"10 write your comment:\r\n");
                         }
                         else
                         {
-                            Console.Error.WriteLine("Input Handler");
                             if (!Posts.TryGetValue(target, out var commentList))
                             {
                                 commentList = new();
@@ -109,7 +102,6 @@ internal class Program
                             }
 
                             var text = HttpUtility.UrlDecode(query[1..]);
-                            Console.Error.WriteLine("Comment Text: " + text);
 
                             commentList.Add(new Comment(certSubject, certHash, text));
 
