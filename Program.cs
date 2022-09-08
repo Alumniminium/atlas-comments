@@ -60,7 +60,7 @@ internal class Program
                     {
                         Console.Write("20 text/gemini\r\n");
                         Console.Write("### Comments\n");
-                        Console.Write("> Your Certificate Subject (CN=) will be use for your name and the Certificate Thumbprint will be saved & publicly accessible.\n");
+                        Console.Write("> 🪪 Your Certificate Subject (CN=) will be use for your name and the Certificate Thumbprint will be saved & publicly accessible.\n");
                         Console.Write($"=> {geminiUrl.Replace("view", "add")} add one!\n");
                         foreach (var comments in Posts.Where(x => x.Key == target).Select(x => x.Value))
                         {
