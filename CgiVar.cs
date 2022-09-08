@@ -1,5 +1,5 @@
 public static class CgiVar
-{  
+{
     public static string Version => Environment.GetEnvironmentVariable("GATEWAY_INTERFACE").ToUpperInvariant();
     public static string Protocol => Environment.GetEnvironmentVariable("SERVER_PROTOCOL").ToUpperInvariant();
     public static string StrPort => Environment.GetEnvironmentVariable("SERVER_PORT");
