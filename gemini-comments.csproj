@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <LangVersion>preview</LangVersion>
     <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
     <RootNamespace>gemini_comments</RootNamespace>
@@ -8,7 +9,7 @@
     <Nullable>disable</Nullable>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
-    <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
+    <RuntimeIdentifier>linux-musl-x64</RuntimeIdentifier>
     <PublishReadyToRun>true</PublishReadyToRun>
     <!-- <PublishTrimmed>true</PublishTrimmed> -->
     <!-- <StripSymbols>true</StripSymbols> -->
