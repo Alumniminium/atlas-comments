@@ -27,7 +27,16 @@ Comments and originals of the articles are stored in the same file.
 {
   "FileSourcePath": "/srv/gemini/her.st/blog/",
   "FileComments": {
-    "rampant-incompetence-among-developers.gmi"
+    "rampant-incompetence-among-developers.gmi": [
+      {
+        "Id": "0682e4e31cf64004a2a8cbc5b237f690",
+        "File": "rampant-incompetence-among-developers.gmi",
+        "Username": "trbl",
+        "Thumbprint": "084F2428E4312A2F79F1E19222C088ACF24395B0",
+        "Text": "test",
+        "TimeStamp": "2022-09-25T07:22:43.1874041+00:00"
+      }
+    ]
   },
   "OriginalFiles": {
     "rampant-incompetence-among-developers.gmi": "SG93IG1hb ... RzCg=="
