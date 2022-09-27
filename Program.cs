@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Text;
+using System.Text.Json;
 using System.Web;
 
 namespace atlasComments
@@ -11,7 +12,7 @@ namespace atlasComments
         private static async Task Main()
         {
             var kvp = CgiVar.PathInfo.Split('/', StringSplitOptions.RemoveEmptyEntries);
-             var type = kvp[1];
+            var type = kvp[1];
             var target = kvp[0];
 
             switch (type)
@@ -33,7 +34,6 @@ namespace atlasComments
             var comments = default(List<Comment>);
             var oldComment = default(Comment);
 
-            //find list and comment based on Id
             foreach (var file in Config.FileComments)
             {
                 comments = file.Value;
@@ -56,6 +56,19 @@ namespace atlasComments
             }
 
             comments.Remove(oldComment);
+
+            var actualFile = Path.Join(Config.FileSourcePath, oldComment.File);
+            var actualFileText = Encoding.UTF8.GetString(Convert.FromBase64String(Config.OriginalFiles[oldComment.File]));
+
+            foreach (var comment in Config.FileComments[oldComment.File])
+            {
+                foreach (var line in comment.Text.Split('\n'))
+                    actualFileText += $"> {line}\n";
+                actualFileText += $"> -- {comment.Username} at {comment.TimeStamp}\n\n";
+            }
+
+            File.WriteAllText(actualFile, actualFileText);
+
             await Config.SaveAsync();
             var newUrl = CgiVar.Url.Replace("delete", "view").Replace(oldComment.Id, oldComment.File);
             Response.Redirect($"{newUrl}");
@@ -74,11 +87,28 @@ namespace atlasComments
             else
             {
                 if (!Config.FileComments.TryGetValue(target, out var commentList))
+                {
                     Config.FileComments.TryAdd(target, commentList = new());
+                    Config.OriginalFiles.TryAdd(target, Convert.ToBase64String(File.ReadAllBytes(Path.Join(Config.FileSourcePath, target))));
+                }
 
                 var text = HttpUtility.UrlDecode(CgiVar.Query[1..]);
-                commentList.Add(new Comment(CgiVar.CertSubject, CgiVar.CertHash, text, target));
+                var newComment = new Comment(CgiVar.CertSubject, CgiVar.CertHash, text, target);
+                commentList.Add(newComment);
                 await Config.SaveAsync();
+
+                var actualFile = Path.Join(Config.FileSourcePath, target);
+                var actualFileText = Encoding.UTF8.GetString(Convert.FromBase64String(Config.OriginalFiles[target]));
+
+                foreach (var comment in Config.FileComments[target])
+                {
+                    foreach (var line in comment.Text.Split('\n'))
+                        actualFileText += $"> {line}\n";
+                    actualFileText += $"> -- {comment.Username} at {comment.TimeStamp}\n\n";
+                }
+
+                File.WriteAllText(actualFile, actualFileText);
+
                 Response.Redirect($"{CgiVar.Url.Replace("add", "view").Split('?')[0]}");
             }
         }
