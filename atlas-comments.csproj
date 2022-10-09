@@ -8,25 +8,26 @@
     <Nullable>disable</Nullable>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
-    <RuntimeIdentifier>linux-musl-x64</RuntimeIdentifier>
-    <PublishReadyToRun>true</PublishReadyToRun>
-    <!-- <PublishTrimmed>true</PublishTrimmed> -->
-    <!-- <StripSymbols>true</StripSymbols> -->
-    <!-- <IlcOptimizationPreference>Size</IlcOptimizationPreference> -->
-    <!-- <TrimmerRemoveSymbols>true</TrimmerRemoveSymbols> -->
-    <!-- <DebuggerSupport>false</DebuggerSupport> -->
-    <!-- <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization> -->
-    <!-- <EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding> -->
-    <!-- <EventSourceSupport>false</EventSourceSupport> -->
-    <!-- <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport> -->
-    <!-- <MetadataUpdaterSupport>false</MetadataUpdaterSupport> -->
-    <!-- <UseNativeHttpHandler>true</UseNativeHttpHandler> -->
-    <!-- <UseSystemResourceKeys>true</UseSystemResourceKeys> -->
-    <!-- <BuiltInComInteropSupport>false</BuiltInComInteropSupport> -->
-    <!-- <CustomResourceTypesSupport>false</CustomResourceTypesSupport> -->
-    <!-- <EnableCppCLIHostActivation>false</EnableCppCLIHostActivation> -->
-    <!-- <EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>false</EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization> -->
-    <!-- <StartupHookSupport>false</StartupHookSupport> -->
+    <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
+    <!-- <PublishAot>true</PublishAot> -->
+    <!-- <PublishReadyToRun>true</PublishReadyToRun> -->
+    <PublishTrimmed>true</PublishTrimmed>
+    <StripSymbols>true</StripSymbols>
+    <IlcOptimizationPreference>Size</IlcOptimizationPreference>
+    <TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
+    <DebuggerSupport>false</DebuggerSupport>
+    <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
+    <EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
+    <EventSourceSupport>false</EventSourceSupport>
+    <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
+    <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+    <UseNativeHttpHandler>true</UseNativeHttpHandler>
+    <UseSystemResourceKeys>true</UseSystemResourceKeys>
+    <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
+    <CustomResourceTypesSupport>false</CustomResourceTypesSupport>
+    <EnableCppCLIHostActivation>false</EnableCppCLIHostActivation>
+    <EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>false</EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>
+    <StartupHookSupport>false</StartupHookSupport>
   </PropertyGroup>
 
 </Project>

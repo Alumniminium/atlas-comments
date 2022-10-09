@@ -2,8 +2,8 @@ namespace atlasComments
 {
     public static class CgiVar
     {
-        public static string Version => Environment.GetEnvironmentVariable("GATEWAY_INTERFACE").ToUpperInvariant();
-        public static string Protocol => Environment.GetEnvironmentVariable("SERVER_PROTOCOL").ToUpperInvariant();
+        public static string Version => Environment.GetEnvironmentVariable("GATEWAY_INTERFACE").ToLowerInvariant();
+        public static string Protocol => Environment.GetEnvironmentVariable("SERVER_PROTOCOL").ToLowerInvariant();
         public static string StrPort => Environment.GetEnvironmentVariable("SERVER_PORT");
         public static string ServerSoftware => Environment.GetEnvironmentVariable("SERVER_SOFTWARE");
         public static string Url => Environment.GetEnvironmentVariable("URL");
@@ -13,7 +13,7 @@ namespace atlasComments
         public static string FQDN => Environment.GetEnvironmentVariable("SERVER_NAME");
         public static string RemoteHost => Environment.GetEnvironmentVariable("REMOTE_HOST");
         public static string RemoteIp => Environment.GetEnvironmentVariable("REMOTE_ADDR");
-        public static string AuthType => Environment.GetEnvironmentVariable("AUTH_TYPE").ToUpperInvariant();
+        public static string AuthType => Environment.GetEnvironmentVariable("AUTH_TYPE").ToLowerInvariant();
         public static string StrTlsVersion => Environment.GetEnvironmentVariable("TLS_VERSION");
         public static string RemoteUser => Environment.GetEnvironmentVariable("REMOTE_USER");
         public static string StrCertValid => Environment.GetEnvironmentVariable("TLS_CLIENT_VALID");
@@ -25,10 +25,10 @@ namespace atlasComments
         public static string CertSerialNumber => Environment.GetEnvironmentVariable("TLS_CLIENT_SERIAL_NUMBER");
 
 
-        public static bool IsGemini => Protocol == "GEMINI";
-        public static bool IsSpartan => Protocol == "SPARTAN";
+        public static bool IsGemini => Protocol == "gemini";
+        public static bool IsSpartan => Protocol == "spartan";
         public static ushort Port => ushort.Parse(StrPort);
-        public static bool HasCert => AuthType == "CERTIFICATE";
+        public static bool HasCert => AuthType == "certificate";
         public static float TlsVersion => float.Parse(StrTlsVersion);
         public static bool CertValid => StrCertValid.ToUpperInvariant() == "TRUE";
         public static bool CertTrusted => StrCertTrusted.ToUpperInvariant() == "TRUE";

@@ -6,44 +6,56 @@ namespace atlasComments
 {
     public static class Program
     {
-        public static readonly Config Config = JsonSerializer.Deserialize<Config>(File.ReadAllText(Config.ConfigName));
+        public const string CfgPath = "/etc/atlas/atlas-comments.json";
+        static Config cfg = new();
         public static readonly TextWriter Error = Console.Error;
         public static readonly TextWriter Output = Console.Out;
         private static async Task Main()
         {
+            if(File.Exists(CfgPath))
+                cfg = JsonSerializer.Deserialize(File.ReadAllText(CfgPath), MyJsonContext.Default.Config);
+            else
+                await cfg.SaveAsync(CfgPath);
+
             var kvp = CgiVar.PathInfo.Split('/', StringSplitOptions.RemoveEmptyEntries);
             var type = kvp[1];
             var target = kvp[0];
 
+            var filePath = "";
+            var uriPath = "";
+
+            foreach(var (dir, rel) in cfg.FileSourcePath)
+            {
+                foreach(var file in Directory.EnumerateFileSystemEntries(dir))
+                {
+                    var fileName = Path.GetFileName(file);
+                    if(Path.GetFileName(fileName) == target)
+                    {
+                        filePath = file;
+                        uriPath = $"{CgiVar.Protocol}://{CgiVar.FQDN}/{rel}{fileName}";
+                    }
+                }
+            }
+
             switch (type)
             {
                 case "view":
-                    View(target);
+                    View(filePath, uriPath);
                     break;
                 case "add":
-                    await Add(target);
+                    await Add(filePath, uriPath);
                     break;
                 case "delete":
-                    await Delete(target);
+                    await Delete(filePath, uriPath);
                     break;
             }
         }
 
-        private static async ValueTask Delete(string target)
+        private static async ValueTask Delete(string filePath, string uriPath)
         {
-            var comments = default(List<Comment>);
-            var oldComment = default(Comment);
+            var oldComment = cfg.FileComments[filePath]?.Find(x => x.File == filePath);
 
-            foreach (var file in Config.FileComments)
-            {
-                comments = file.Value;
-                oldComment = comments.Find(x => x.Id == target);
-
-                if (oldComment != null)
-                    break;
-            }
-
-            if (oldComment is null || comments is null)
+            if (oldComment is null)
             {
                 Response.BadRequest($"Comment not found");
                 return;
@@ -55,12 +67,12 @@ namespace atlasComments
                 return;
             }
 
-            comments.Remove(oldComment);
+            cfg.FileComments[filePath].Remove(oldComment);
 
-            var actualFile = Path.Join(Config.FileSourcePath, oldComment.File);
-            var actualFileText = Encoding.UTF8.GetString(Convert.FromBase64String(Config.OriginalFiles[oldComment.File]));
+            var actualFile = filePath;
+            var actualFileText = Encoding.UTF8.GetString(Convert.FromBase64String(cfg.OriginalFiles[oldComment.File]));
 
-            foreach (var comment in Config.FileComments[oldComment.File])
+            foreach (var comment in cfg.FileComments[oldComment.File])
             {
                 foreach (var line in comment.Text.Split('\n'))
                     actualFileText += $"> {line}\n";
@@ -69,15 +81,15 @@ namespace atlasComments
 
             File.WriteAllText(actualFile, actualFileText);
 
-            await Config.SaveAsync();
+            await cfg.SaveAsync(CfgPath);
             var newUrl = CgiVar.Url.Replace("delete", "view").Replace(oldComment.Id, oldComment.File);
             Response.Redirect($"{newUrl}");
         }
 
-        private static async ValueTask Add(string target)
+        private static async ValueTask Add(string filePath, string fileUri)
         {
-            if (!File.Exists(Path.Join(Config.FileSourcePath, target)))
-                Response.NotFound(target);
+            if (!File.Exists(filePath))
+                Response.NotFound(fileUri);
             else if (!CgiVar.HasCert)
                 Response.CertRequired();
             else if (!CgiVar.CertValid)
@@ -86,21 +98,21 @@ namespace atlasComments
                 Response.Input("write your comment:");
             else
             {
-                if (!Config.FileComments.TryGetValue(target, out var commentList))
+                if (!cfg.FileComments.TryGetValue(filePath, out var commentList))
                 {
-                    Config.FileComments.TryAdd(target, commentList = new());
-                    Config.OriginalFiles.TryAdd(target, Convert.ToBase64String(File.ReadAllBytes(Path.Join(Config.FileSourcePath, target))));
+                    cfg.FileComments.TryAdd(filePath, commentList = new());
+                    cfg.OriginalFiles.TryAdd(filePath, Convert.ToBase64String(File.ReadAllBytes(filePath)));
                 }
 
                 var text = HttpUtility.UrlDecode(CgiVar.Query[1..]);
-                var newComment = new Comment(CgiVar.CertSubject, CgiVar.CertHash, text, target);
+                var newComment = new Comment(CgiVar.CertSubject, CgiVar.CertHash, text, filePath);
                 commentList.Add(newComment);
-                await Config.SaveAsync();
+            await cfg.SaveAsync(CfgPath);
 
-                var actualFile = Path.Join(Config.FileSourcePath, target);
-                var actualFileText = Encoding.UTF8.GetString(Convert.FromBase64String(Config.OriginalFiles[target]));
+                var actualFile = filePath;
+                var actualFileText = Encoding.UTF8.GetString(Convert.FromBase64String(cfg.OriginalFiles[filePath]));
 
-                foreach (var comment in Config.FileComments[target])
+                foreach (var comment in cfg.FileComments[filePath])
                 {
                     foreach (var line in comment.Text.Split('\n'))
                         actualFileText += $"> {line}\n";
@@ -113,11 +125,11 @@ namespace atlasComments
             }
         }
 
-        private static void View(string target)
+        private static void View(string filePath, string uriPath)
         {
-            if (File.Exists(Path.Join(Config.FileSourcePath, target)))
+            if (File.Exists(filePath))
             {
-                Response.Ok($"### {Path.GetFileNameWithoutExtension(target)}\n");
+                Response.Ok($"=> {uriPath} {Path.GetFileNameWithoutExtension(filePath)}\n");
                 if (CgiVar.HasCert)
                 {
                     Output.WriteLine($"> 🪪 Subject: {CgiVar.RemoteUser}");
@@ -129,19 +141,19 @@ namespace atlasComments
                     Output.WriteLine($"> 🪪 No Certificate! You can only read comments but not write any.");
 
                 Output.WriteLine($"### Comments");
-                var list = Config.FileComments.Where(x => x.Key == target).Select(x => x.Value).FirstOrDefault(new List<Comment>());
+                var list = cfg.FileComments.Where(x => x.Key == filePath).Select(x => x.Value).FirstOrDefault(new List<Comment>());
                 foreach (var comment in list.OrderByDescending(x => x.TimeStamp))
                 {
                     foreach (var line in comment.Text.Split('\n'))
                         Output.WriteLine($"> {line}");
                     Output.WriteLine($"> -- {comment.Username} at {comment.TimeStamp}");
                     if (comment.Thumbprint == CgiVar.CertHash)
-                        Output.WriteLine($"=> {CgiVar.Url.Replace("view", "delete").Replace(target, comment.Id)} ☢️delete");
+                        Output.WriteLine($"=> {CgiVar.Url.Replace("view", "delete").Replace(filePath, comment.Id)} ☢️delete");
                     Output.WriteLine();
                 }
             }
             else
-                Response.NotFound(target);
+                Response.NotFound(uriPath);
         }
     }
 }
